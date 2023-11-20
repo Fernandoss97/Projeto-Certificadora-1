@@ -27,7 +27,6 @@ FOREIGN KEY (usuario_ra) REFERENCES Usuario (RA),
 FOREIGN KEY (questao_id) REFERENCES Imagens (ID)
 );
 
-DROP TABLE Respostas
 INSERT INTO Imagens  VALUES (1, 'problema1.jpg',1, pg_read_binary_file('C:\Program Files\PostgreSQL\16\data\imagens\problema1.jpg'));
 INSERT INTO Imagens  VALUES (2, 'problema2.jpg',1, pg_read_binary_file('C:\Program Files\PostgreSQL\16\data\imagens\problema2.jpg'));
 INSERT INTO Imagens  VALUES (3, 'problema3.jpg',1, pg_read_binary_file('C:\Program Files\PostgreSQL\16\data\imagens\problema3.jpg'));
@@ -38,8 +37,3 @@ INSERT INTO Imagens  VALUES (7, 'problema7.jpg',2, pg_read_binary_file('C:\Progr
 INSERT INTO Imagens  VALUES (8, 'problema8.jpg',3, pg_read_binary_file('C:\Program Files\PostgreSQL\16\data\imagens\problema8.jpg'));
 INSERT INTO Imagens  VALUES (9, 'problema9.jpg',3, pg_read_binary_file('C:\Program Files\PostgreSQL\16\data\imagens\problema9.jpg'));
 INSERT INTO Imagens  VALUES (10, 'problema10.jpg',3, pg_read_binary_file('C:\Program Files\PostgreSQL\16\data\imagens\problema10.jpg'));
-
-Select *
-FROM Respostas
-
-SELECT resposta_dada FROM Respostas WHERE usuario_ra = 2349795 AND questao_id = 2
