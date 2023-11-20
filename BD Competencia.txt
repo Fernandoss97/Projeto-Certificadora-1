@@ -1,0 +1,45 @@
+CREATE TABLE Usuario(
+RA INT NOT NULL UNIQUE, 
+Nome VARCHAR(40) NOT NULL,
+Senha VARCHAR(15) NOT NULL,
+Perfil VARCHAR(40)
+);
+INSERT INTO Usuario VALUES(2349795,'Vinicius Cerrone', 'utfpr','Aluno');
+INSERT INTO Usuario VALUES(2346370,'Daniel Seidenthal', 'utfpr','Aluno');
+INSERT INTO Usuario VALUES(1234,'Gustavo Paladino', 'utfpr','Aluno');
+ALTER TABLE Usuario ADD PRIMARY KEY(RA);
+
+CREATE TABLE Imagens(
+ID INT NOT NULL,
+Nome VARCHAR(255),
+Nivel INT NOT NULL,
+Dados BYTEA
+); 
+ALTER TABLE Imagens ADD PRIMARY KEY(ID);
+
+CREATE TABLE Respostas(
+usuario_ra INT,
+questao_id INT,
+resposta_dada TEXT,
+respondida_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (usuario_ra, questao_id),
+FOREIGN KEY (usuario_ra) REFERENCES Usuario (RA),
+FOREIGN KEY (questao_id) REFERENCES Imagens (ID)
+);
+
+DROP TABLE Respostas
+INSERT INTO Imagens  VALUES (1, 'problema1.jpg',1, pg_read_binary_file('C:\Program Files\PostgreSQL\16\data\imagens\problema1.jpg'));
+INSERT INTO Imagens  VALUES (2, 'problema2.jpg',1, pg_read_binary_file('C:\Program Files\PostgreSQL\16\data\imagens\problema2.jpg'));
+INSERT INTO Imagens  VALUES (3, 'problema3.jpg',1, pg_read_binary_file('C:\Program Files\PostgreSQL\16\data\imagens\problema3.jpg'));
+INSERT INTO Imagens  VALUES (4, 'problema4.jpg',1, pg_read_binary_file('C:\Program Files\PostgreSQL\16\data\imagens\problema4.jpg'));
+INSERT INTO Imagens  VALUES (5, 'problema5.jpg',2, pg_read_binary_file('C:\Program Files\PostgreSQL\16\data\imagens\problema5.jpg'));
+INSERT INTO Imagens  VALUES (6, 'problema6.jpg',2, pg_read_binary_file('C:\Program Files\PostgreSQL\16\data\imagens\problema6.jpg'));
+INSERT INTO Imagens  VALUES (7, 'problema7.jpg',2, pg_read_binary_file('C:\Program Files\PostgreSQL\16\data\imagens\problema7.jpg'));
+INSERT INTO Imagens  VALUES (8, 'problema8.jpg',3, pg_read_binary_file('C:\Program Files\PostgreSQL\16\data\imagens\problema8.jpg'));
+INSERT INTO Imagens  VALUES (9, 'problema9.jpg',3, pg_read_binary_file('C:\Program Files\PostgreSQL\16\data\imagens\problema9.jpg'));
+INSERT INTO Imagens  VALUES (10, 'problema10.jpg',3, pg_read_binary_file('C:\Program Files\PostgreSQL\16\data\imagens\problema10.jpg'));
+
+Select *
+FROM Respostas
+
+SELECT resposta_dada FROM Respostas WHERE usuario_ra = 2349795 AND questao_id = 2
