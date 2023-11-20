@@ -38,7 +38,7 @@ O sistema também implementa algumas regras que devem ser seguidas pelo usuário
 
 ## Repositório do projeto
 
-O repositório do projeto pode ser acessado **[através desse site](https://github.com/Fernandoss97/ProjetoCertificadora "através desse site")**
+O repositório do projeto pode ser acessado **[através desse site](https://github.com/Fernandoss97/Projeto-Certificadora-1.git "através desse site")**
 
 ## Instalação e execução
 
