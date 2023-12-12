@@ -24,7 +24,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Connection;
 
-
 /**
  *
  * @author Rafa
@@ -32,11 +31,19 @@ import java.sql.Connection;
 public class Inicial extends javax.swing.JFrame {
 
     int idUsuario = Integer.parseInt(ctRA.getText());
-    int novaResposta;
     JTextField txtResp1 = new JTextField();
     Connection conexao = null;
     PreparedStatement pst = null;
     ResultSet rs = null;
+    private static int pontuacaoAtual = 0;
+
+    public static void atualizarPontuacao(String novaPontuacao) {
+        lblPontuacao.setText(novaPontuacao);
+    }
+
+    public static int getPontuacaoAtual() {
+        return pontuacaoAtual;
+    }
 
     public void verificarRespostaEAtualizarImagem(int idUsuario, int questaoId, JLabel[] labels) {
         String sqbusca = "SELECT resposta_dada FROM Respostas WHERE usuario_ra = ? AND questao_id = ?";
@@ -133,6 +140,8 @@ public class Inicial extends javax.swing.JFrame {
         lblData = new javax.swing.JLabel();
         lblUsuario = new javax.swing.JLabel();
         btSair = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        lblPontuacao = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         lbl1 = new javax.swing.JLabel();
         painel2 = new javax.swing.JPanel();
@@ -243,6 +252,13 @@ public class Inicial extends javax.swing.JFrame {
             }
         });
 
+        jLabel4.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+        jLabel4.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel4.setText("Pontuação : ");
+
+        lblPontuacao.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+        lblPontuacao.setForeground(new java.awt.Color(255, 255, 255));
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -255,9 +271,13 @@ public class Inicial extends javax.swing.JFrame {
                         .addContainerGap(127, Short.MAX_VALUE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jLabel4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lblPontuacao, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                             .addComponent(lblData)
                             .addComponent(btSair))
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                        .addGap(18, 18, 18))))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -266,7 +286,11 @@ public class Inicial extends javax.swing.JFrame {
                 .addComponent(lblUsuario)
                 .addGap(49, 49, 49)
                 .addComponent(lblData)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 369, Short.MAX_VALUE)
+                .addGap(49, 49, 49)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblPontuacao, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 299, Short.MAX_VALUE)
                 .addComponent(btSair)
                 .addContainerGap())
         );
@@ -287,6 +311,7 @@ public class Inicial extends javax.swing.JFrame {
         btProb8.setBorderPainted(false);
         btProb8.setContentAreaFilled(false);
         btProb8.setDefaultCapable(false);
+        btProb8.setEnabled(false);
         btProb8.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btProb8ActionPerformed(evt);
@@ -314,6 +339,7 @@ public class Inicial extends javax.swing.JFrame {
         btProb10.setText("Problema 10");
         btProb10.setBorderPainted(false);
         btProb10.setContentAreaFilled(false);
+        btProb10.setEnabled(false);
         btProb10.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btProb10ActionPerformed(evt);
@@ -341,6 +367,7 @@ public class Inicial extends javax.swing.JFrame {
         btProb9.setText("Problema 9");
         btProb9.setBorderPainted(false);
         btProb9.setContentAreaFilled(false);
+        btProb9.setEnabled(false);
         btProb9.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btProb9ActionPerformed(evt);
@@ -368,6 +395,7 @@ public class Inicial extends javax.swing.JFrame {
         btProb5.setText("Problema 5");
         btProb5.setBorderPainted(false);
         btProb5.setContentAreaFilled(false);
+        btProb5.setEnabled(false);
         btProb5.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btProb5ActionPerformed(evt);
@@ -397,6 +425,7 @@ public class Inicial extends javax.swing.JFrame {
         btProb6.setText("Problema 6");
         btProb6.setBorderPainted(false);
         btProb6.setContentAreaFilled(false);
+        btProb6.setEnabled(false);
         btProb6.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btProb6ActionPerformed(evt);
@@ -426,6 +455,7 @@ public class Inicial extends javax.swing.JFrame {
         btProb7.setText("Problema 7");
         btProb7.setBorderPainted(false);
         btProb7.setContentAreaFilled(false);
+        btProb7.setEnabled(false);
         btProb7.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btProb7ActionPerformed(evt);
@@ -730,13 +760,13 @@ public class Inicial extends javax.swing.JFrame {
                     if (resp == 0) {
                         Problema1 problema1 = new Problema1();
                         problema1.setVisible(true);
-                        carregarImagem(1, lblProb1); // Substituir '1' pelo ID da imagem que você deseja exibir
+                        carregarImagem(1, lblProb1);
                     }
                 }
             } else {
                 Problema1 problema1 = new Problema1();
                 problema1.setVisible(true);
-                carregarImagem(1, lblProb1); // Substituir '1' pelo ID da imagem que você deseja exibir
+                carregarImagem(1, lblProb1);
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Erro: " + e.getMessage());
@@ -1127,20 +1157,21 @@ public class Inicial extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btProb1;
-    private javax.swing.JButton btProb10;
-    private javax.swing.JButton btProb2;
-    private javax.swing.JButton btProb3;
-    private javax.swing.JButton btProb4;
-    private javax.swing.JButton btProb5;
-    private javax.swing.JButton btProb6;
-    private javax.swing.JButton btProb7;
-    private javax.swing.JButton btProb8;
-    private javax.swing.JButton btProb9;
+    public static javax.swing.JButton btProb1;
+    public static javax.swing.JButton btProb10;
+    public static javax.swing.JButton btProb2;
+    public static javax.swing.JButton btProb3;
+    public static javax.swing.JButton btProb4;
+    public static javax.swing.JButton btProb5;
+    public static javax.swing.JButton btProb6;
+    public static javax.swing.JButton btProb7;
+    public static javax.swing.JButton btProb8;
+    public static javax.swing.JButton btProb9;
     private javax.swing.JButton btSair;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -1157,6 +1188,7 @@ public class Inicial extends javax.swing.JFrame {
     private javax.swing.JLabel lbl8;
     private javax.swing.JLabel lbl9;
     private javax.swing.JLabel lblData;
+    public static javax.swing.JLabel lblPontuacao;
     public static javax.swing.JLabel lblUsuario;
     private javax.swing.JPanel painel1;
     private javax.swing.JPanel painel10;
@@ -1166,9 +1198,6 @@ public class Inicial extends javax.swing.JFrame {
     private javax.swing.JPanel painel3;
     private javax.swing.JPanel painel4;
     private javax.swing.JPanel painel5;
-    private javax.swing.JPanel painel6;
-    private javax.swing.JPanel painel7;
-    private javax.swing.JPanel painel8;
     private javax.swing.JPanel painel9;
     // End of variables declaration//GEN-END:variables
 }

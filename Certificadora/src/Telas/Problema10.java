@@ -19,10 +19,10 @@ public class Problema10 extends javax.swing.JFrame {
 
     private double respUsuario;
     private double respSistema;
-    
+
     int idUsuario = Integer.parseInt(ctRA.getText());
     int idQuestao = 10;
-    
+
     Connection conexao = null;
     PreparedStatement pst = null;
     ResultSet rs = null;
@@ -33,7 +33,59 @@ public class Problema10 extends javax.swing.JFrame {
         adicionarActionListeners();
     }
 
-     private void adicionarActionListeners() {
+    private ResultSet buscarResposta(int usuarioRa, int questaoId) throws SQLException {
+        String sqbusca = "SELECT resposta_dada FROM Respostas WHERE usuario_ra = ? AND questao_id = ?";
+        pst = conexao.prepareStatement(sqbusca);
+        pst.setInt(1, usuarioRa);
+        pst.setInt(2, questaoId);
+        return pst.executeQuery();
+    }
+
+    private void pontuacao(int usuarioRa) {
+        try {
+            rs = buscarResposta(idUsuario, 10); // Substituir '1' pelo ID da questão
+
+            if (rs.next()) {
+                String resposta = rs.getString("resposta_dada");
+                if (resposta != null || !resposta.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "A questão ja foi respondida anteriormente. A pontuação da questão será reduzida pela metade ");
+                    String pontos = "UPDATE Pontuacao SET Pontos = Pontos + 250 WHERE RA = ?";
+                    pst = conexao.prepareStatement(pontos);
+                    pst.setInt(1, usuarioRa);
+                    pst.executeUpdate();
+                }
+            } else {
+                String pontos = "UPDATE Pontuacao SET Pontos = Pontos + 500 WHERE RA = ?";
+                pst = conexao.prepareStatement(pontos);
+                pst.setInt(1, usuarioRa);
+                pst.executeUpdate();
+            }
+            
+        // Agora, após atualizar o banco de dados, você pode buscar a pontuação atual e atualizar a interface
+            String sqlPontuacao = "SELECT Pontos FROM Pontuacao WHERE RA = ?";
+            pst = conexao.prepareStatement(sqlPontuacao);
+            pst.setInt(1, usuarioRa);
+            rs = pst.executeQuery();
+
+            if (rs.next()) {
+                int novaPontuacao = rs.getInt("Pontos");
+                Inicial.atualizarPontuacao(Integer.toString(novaPontuacao));
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro: " + e.getMessage());
+        } finally {
+            // Feche a conexão e os recursos
+            try {
+                if (pst != null) {
+                    pst.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void adicionarActionListeners() {
         btCalc.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -51,13 +103,12 @@ public class Problema10 extends javax.swing.JFrame {
     }
 
     private void calcular() {
-             try {
+        try {
             double areaOleo = Double.parseDouble(txtOleo.getText());
-            double tamanhoPonteFoto =  Double.parseDouble(txtPonteFoto.getText());
-            double tamanhoPonteReal =  Double.parseDouble(txtPonteReal.getText());
+            double tamanhoPonteFoto = Double.parseDouble(txtPonteFoto.getText());
+            double tamanhoPonteReal = Double.parseDouble(txtPonteReal.getText());
 
-
-            respSistema = Math.pow((Math.sqrt(areaOleo) * tamanhoPonteReal) / tamanhoPonteFoto,2)/1000000;
+            respSistema = Math.pow((Math.sqrt(areaOleo) * tamanhoPonteReal) / tamanhoPonteFoto, 2) / 1000000;
 
             lblRespSistema.setText(":" + respSistema);
 
@@ -70,13 +121,26 @@ public class Problema10 extends javax.swing.JFrame {
 
     private void verificar() throws SQLException {
 
-        if ((respUsuario >= respSistema-0.5) && (respUsuario <= respSistema+0.5)) {
-             ArmazenarResposta();
+        if ((respUsuario >= respSistema - 0.5) && (respUsuario <= respSistema + 0.5)) {
+            pontuacao(idUsuario);
+            try {
+                ArmazenarResposta();
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(null, "Erro: " + e.getMessage());
+            } finally {
+                // Feche a conexão e os recursos
+                try {
+                    if (pst != null) {
+                        pst.close();
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
             JOptionPane.showMessageDialog(this, "Parabéns! Você acertou!.", "Acerto", JOptionPane.INFORMATION_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(this, "Desculpe, parece que a resposta está incorreta. Tente novamente.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
-
         // Limpar campos para a próxima pergunta
         limpar();
     }
@@ -88,30 +152,68 @@ public class Problema10 extends javax.swing.JFrame {
         lblRespSistema.setText("");
         txtRespUsuario.setText("");
     }
-    
-    private void ArmazenarResposta() throws SQLException {
-    String sql = "INSERT INTO Respostas (usuario_ra, questao_id, resposta_dada) VALUES (?, ?, ?)";
-    try {
-        pst = conexao.prepareStatement(sql);
-        pst.setInt(1, idUsuario);
-        pst.setInt(2, idQuestao);
-        pst.setDouble(3, respUsuario); // Se respostaUsuario for do tipo inteiro
 
-        // Execute a instrução SQL
-        pst.executeUpdate();
-    } catch (SQLException e) {
-        e.printStackTrace(); // Imprima a exceção para depuração
-    } finally {
-        // Feche a conexão e os recursos
+    private void atualizarResposta(int usuarioRa, int questaoId, String novaResposta) throws SQLException {
+        String sqlUpdate = "UPDATE Respostas SET resposta_dada = ? WHERE usuario_ra = ? AND questao_id = ?";
         try {
-            if (pst != null) {
-                pst.close();
+            pst = conexao.prepareStatement(sqlUpdate);
+            pst.setString(1, novaResposta);
+            pst.setInt(2, usuarioRa);
+            pst.setInt(3, questaoId);
+            pst.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            // Feche a conexão e os recursos
+            try {
+                if (pst != null) {
+                    pst.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void ArmazenarResposta() throws SQLException {
+        String sql = "SELECT resposta_dada FROM Respostas WHERE usuario_ra = ? AND questao_id = ?";
+        try {
+            pst = conexao.prepareStatement(sql);
+            pst.setInt(1, idUsuario);
+            pst.setInt(2, idQuestao);
+
+            // Execute a consulta SQL
+            rs = pst.executeQuery();
+
+            if (rs.next()) {
+                // Se a resposta existe, atualiza
+                atualizarResposta(idUsuario, idQuestao, String.valueOf(respUsuario));
+            } else {
+                // Se não existir, insira uma nova resposta
+                String insertSql = "INSERT INTO Respostas (usuario_ra, questao_id, resposta_dada) VALUES (?, ?, ?)";
+                pst = conexao.prepareStatement(insertSql);
+                pst.setInt(1, idUsuario);
+                pst.setInt(2, idQuestao);
+                pst.setString(3, String.valueOf(respUsuario));
+
+                pst.executeUpdate();
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (pst != null) {
+                    pst.close();
+                }
+                if (rs != null) {
+                    rs.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
-}
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -298,7 +400,7 @@ public class Problema10 extends javax.swing.JFrame {
             Problema9 problema9 = new Problema9();
             problema9.setVisible(true);
 
-             String sql = "SELECT dados FROM imagens WHERE id = ?";
+            String sql = "SELECT dados FROM imagens WHERE id = ?";
             try {
                 pst = conexao.prepareStatement(sql);
                 pst.setInt(1, 9); // Substitua '1' pelo ID da imagem que você deseja exibir
@@ -335,21 +437,21 @@ public class Problema10 extends javax.swing.JFrame {
     }//GEN-LAST:event_btCalcActionPerformed
 
     private void btConfirmaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btConfirmaActionPerformed
-       if(respUsuario == 0){
-           JOptionPane.showMessageDialog(Problema10.this, "Por favor, insira sua resposta.", "Erro", JOptionPane.ERROR_MESSAGE);
-       }else{
-           try {
-               verificar();
-           } catch (SQLException ex) {
-               Logger.getLogger(Problema10.class.getName()).log(Level.SEVERE, null, ex);
-           }
-        this.dispose();
-       }
+        if (respUsuario == 0) {
+            JOptionPane.showMessageDialog(Problema10.this, "Por favor, insira sua resposta.", "Erro", JOptionPane.ERROR_MESSAGE);
+        } else {
+            try {
+                verificar();
+            } catch (SQLException ex) {
+                Logger.getLogger(Problema10.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            this.dispose();
+        }
     }//GEN-LAST:event_btConfirmaActionPerformed
 
     /**
-         * @param args the command line arguments
-         */
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">

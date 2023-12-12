@@ -20,7 +20,7 @@ public class Problema6 extends javax.swing.JFrame {
 
     private float respUsuario;
     private float respSistema;
-    
+
     int idUsuario = Integer.parseInt(ctRA.getText());
     int idQuestao = 6;
 
@@ -32,6 +32,56 @@ public class Problema6 extends javax.swing.JFrame {
         initComponents();
         conexao = ModuloConexao.conector();
         adicionarActionListeners();
+    }
+
+    private ResultSet buscarResposta(int usuarioRa, int questaoId) throws SQLException {
+        String sqbusca = "SELECT resposta_dada FROM Respostas WHERE usuario_ra = ? AND questao_id = ?";
+        pst = conexao.prepareStatement(sqbusca);
+        pst.setInt(1, usuarioRa);
+        pst.setInt(2, questaoId);
+        return pst.executeQuery();
+    }
+
+    private void pontuacao(int usuarioRa) {
+        try {
+            rs = buscarResposta(idUsuario, 6); // Substituir '1' pelo ID da questão
+
+            if (rs.next()) {
+                String resposta = rs.getString("resposta_dada");
+                if (resposta != null || !resposta.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "A questão ja foi respondida anteriormente. A pontuação da questão será reduzida pela metade ");
+                    String pontos = "UPDATE Pontuacao SET Pontos = Pontos + 125 WHERE RA = ?";
+                    pst = conexao.prepareStatement(pontos);
+                    pst.setInt(1, usuarioRa);
+                    pst.executeUpdate();
+                }
+            } else {
+                String pontos = "UPDATE Pontuacao SET Pontos = Pontos + 250 WHERE RA = ?";
+                pst = conexao.prepareStatement(pontos);
+                pst.setInt(1, usuarioRa);
+                pst.executeUpdate();
+            }
+            String sqlPontuacao = "SELECT Pontos FROM Pontuacao WHERE RA = ?";
+            pst = conexao.prepareStatement(sqlPontuacao);
+            pst.setInt(1, usuarioRa);
+            rs = pst.executeQuery();
+
+            if (rs.next()) {
+                int novaPontuacao = rs.getInt("Pontos");
+                Inicial.atualizarPontuacao(Integer.toString(novaPontuacao));
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro: " + e.getMessage());
+        } finally {
+            // Feche a conexão e os recursos
+            try {
+                if (pst != null) {
+                    pst.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void adicionarActionListeners() {
@@ -94,12 +144,25 @@ public class Problema6 extends javax.swing.JFrame {
     private void verificar() throws SQLException {
 
         if (respUsuario == respSistema) {
-             ArmazenarResposta();
+            pontuacao(idUsuario);
+            try {
+                ArmazenarResposta();
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(null, "Erro: " + e.getMessage());
+            } finally {
+                // Feche a conexão e os recursos
+                try {
+                    if (pst != null) {
+                        pst.close();
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
             JOptionPane.showMessageDialog(this, "Parabéns! Você acertou!.", "Acerto", JOptionPane.INFORMATION_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(this, "Desculpe, parece que a resposta está incorreta. Tente novamente.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
-
         // Limpar campos para a próxima pergunta
         limpar();
     }
@@ -112,30 +175,67 @@ public class Problema6 extends javax.swing.JFrame {
         lblRespSistema.setText("");
         txtRespUsuario.setText("");
     }
-    
-    private void ArmazenarResposta() throws SQLException {
-    String sql = "INSERT INTO Respostas (usuario_ra, questao_id, resposta_dada) VALUES (?, ?, ?)";
-    try {
-        pst = conexao.prepareStatement(sql);
-        pst.setInt(1, idUsuario);
-        pst.setInt(2, idQuestao);
-        pst.setFloat(3, respUsuario); 
 
-        // Execute a instrução SQL
-        pst.executeUpdate();
-    } catch (SQLException e) {
-        e.printStackTrace(); // Imprima a exceção para depuração
-    } finally {
-        // Feche a conexão e os recursos
+    private void atualizarResposta(int usuarioRa, int questaoId, String novaResposta) throws SQLException {
+        String sqlUpdate = "UPDATE Respostas SET resposta_dada = ? WHERE usuario_ra = ? AND questao_id = ?";
         try {
-            if (pst != null) {
-                pst.close();
+            pst = conexao.prepareStatement(sqlUpdate);
+            pst.setString(1, novaResposta);
+            pst.setInt(2, usuarioRa);
+            pst.setInt(3, questaoId);
+            pst.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            // Feche a conexão e os recursos
+            try {
+                if (pst != null) {
+                    pst.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void ArmazenarResposta() throws SQLException {
+        String sql = "SELECT resposta_dada FROM Respostas WHERE usuario_ra = ? AND questao_id = ?";
+        try {
+            pst = conexao.prepareStatement(sql);
+            pst.setInt(1, idUsuario);
+            pst.setInt(2, idQuestao);
+
+            // Execute a consulta SQL
+            rs = pst.executeQuery();
+
+            if (rs.next()) {
+                // Se a resposta existe, atualiza
+                atualizarResposta(idUsuario, idQuestao, String.valueOf(respUsuario));
+            } else {
+                // Se não existir, insira uma nova resposta
+                String insertSql = "INSERT INTO Respostas (usuario_ra, questao_id, resposta_dada) VALUES (?, ?, ?)";
+                pst = conexao.prepareStatement(insertSql);
+                pst.setInt(1, idUsuario);
+                pst.setInt(2, idQuestao);
+                pst.setString(3, String.valueOf(respUsuario));
+
+                pst.executeUpdate();
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (pst != null) {
+                    pst.close();
+                }
+                if (rs != null) {
+                    rs.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
-}
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -414,7 +514,7 @@ public class Problema6 extends javax.swing.JFrame {
                     e.printStackTrace();
                 }
             }
-             
+
         }
     }//GEN-LAST:event_btPulaActionPerformed
 
