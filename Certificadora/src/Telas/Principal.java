@@ -2,6 +2,8 @@ package Telas;
 
 import java.sql.*;
 import Conexao.ModuloConexao;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.JOptionPane;
 
 public class Principal extends javax.swing.JFrame {
@@ -11,30 +13,69 @@ public class Principal extends javax.swing.JFrame {
     ResultSet rs = null;
 
     public void logar() {
-        String sql = "select * from Usuario where RA=? and Senha=?";
+        String sqlUsuario = "SELECT * FROM Usuario WHERE RA=? AND Senha=?";
+        String sqlPontuacao = "SELECT * FROM Pontuacao WHERE RA=?";
+        String sqlQuestoesRespondidas = "SELECT i.ID, r.usuario_ra, r.questao_id, r.resposta_dada "
+                + "FROM Imagens i "
+                + "LEFT JOIN Respostas r ON i.ID = r.questao_id AND r.usuario_ra = ?";
+
         try {
-            pst = conexao.prepareStatement(sql);
+            // Consulta na tabela Usuario
+            pst = conexao.prepareStatement(sqlUsuario);
             pst.setInt(1, Integer.parseInt(ctRA.getText()));
             pst.setString(2, ctSenha.getText());
             rs = pst.executeQuery();
+
             if (rs.next()) {
-                String perfil = rs.getString(4);
-                if (perfil.equals("Aluno")) {
+                String nome = rs.getString("Nome");
+                int ra = rs.getInt("RA");
+
+                // Consulta na tabela Pontuacao
+                pst = conexao.prepareStatement(sqlPontuacao);
+                pst.setInt(1, ra);
+                rs = pst.executeQuery();
+
+                if (rs.next()) {
+                    int pontuacao = rs.getInt("Pontos");
+
+                    // Consulta para obter informações sobre questões respondidas
+                    pst = conexao.prepareStatement(sqlQuestoesRespondidas);
+                    pst.setInt(1, ra);
+                    rs = pst.executeQuery();
+
+                    Set<Integer> questoesRespondidas = new HashSet<>();
+
+                    while (rs.next()) {
+                        int questaoID = rs.getInt("questao_ID");
+                        questoesRespondidas.add(questaoID);
+                    }
+
                     Inicial inicial = new Inicial();
                     inicial.setVisible(true);
-                    Inicial.lblUsuario.setText(rs.getString(2));
+                    Inicial.lblUsuario.setText(nome);
+                    Inicial.lblPontuacao.setText(Integer.toString(pontuacao));
+                    inicial.atualizarPontuacao(Integer.toString(pontuacao));
+
+// Verificar questões respondidas e habilitar os botões apropriados
+                    if (questoesRespondidas.contains(1) || questoesRespondidas.contains(2) || questoesRespondidas.contains(3) || questoesRespondidas.contains(4)) {
+                        Inicial.btProb5.setEnabled(true);
+                        Inicial.btProb6.setEnabled(true);
+                        Inicial.btProb7.setEnabled(true);
+                    }
+                   if (questoesRespondidas.contains(5) || questoesRespondidas.contains(6) || questoesRespondidas.contains(7)) {
+                        Inicial.btProb8.setEnabled(true);
+                        Inicial.btProb9.setEnabled(true);
+                        Inicial.btProb10.setEnabled(true);
+                    }
                     this.dispose();
                 } else {
-                    Inicial inicial = new Inicial();
-                    inicial.setVisible(true);
-                    Inicial.lblUsuario.setText(rs.getString(2));
-                    this.dispose();
+                    JOptionPane.showMessageDialog(null, "RA e/ou Senha inválido(s)");
                 }
             } else {
                 JOptionPane.showMessageDialog(null, "RA e/ou Senha inválido(s)");
             }
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
     }
 
